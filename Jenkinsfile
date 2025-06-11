@@ -7,6 +7,7 @@ pipeline {
         stage("code") {
             steps {
                 git url: "https://github.com/Manav-Rajpal/Jenkins-django-notes-app", branch: "main"
+                echo "finally all set, learnt jenkins from heart"
             }
         }
 
