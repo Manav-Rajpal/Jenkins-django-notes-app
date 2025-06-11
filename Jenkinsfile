@@ -1,44 +1,40 @@
 pipeline {
-    
-    agent { 
-        node{
-            label "dev"
-            
-        }
+    agent {
+        label 'dev'
     }
-    
-    stages{
-        stage("Clone Code"){
-            steps{
-                git url: "https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
-                echo "Aaj toh LinkedIn Post bannta hai boss"
+
+    stages {
+        stage("code") {
+            steps {
+                git url: "https://github.com/Manav-Rajpal/Jenkins-django-notes-app", branch: "main"
             }
         }
-        stage("Build & Test"){
-            steps{
-                sh "docker build . -t notes-app-jenkins:latest"
+
+        stage("build & test") {
+            steps {
+                sh "docker build -t django-notes-app-final ."
             }
         }
-        stage("Push to DockerHub"){
-            steps{
-                withCredentials(
-                    [usernamePassword(
-                        credentialsId:"dockerCreds",
-                        passwordVariable:"dockerHubPass", 
-                        usernameVariable:"dockerHubUser"
-                        )
-                    ]
-                ){
-                sh "docker image tag notes-app-jenkins:latest ${env.dockerHubUser}/notes-app-jenkins:latest"
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker push ${env.dockerHubUser}/notes-app-jenkins:latest"
+
+        stage("pushed to docker hub") {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: "manavCreds",
+                    usernameVariable: "dockerhubuser",
+                    passwordVariable: "dockerhubpass"
+                )]) {
+                    sh """
+                        docker tag django-notes-app-final \${dockerhubuser}/django-notes-app-final
+                        docker login -u \${dockerhubuser} -p \${dockerhubpass}
+                        docker push \${dockerhubuser}/django-notes-app-final
+                    """
                 }
             }
         }
-        
-        stage("Deploy"){
-            steps{
-                sh "docker compose up -d"
+
+        stage("deploy") {
+            steps {
+                sh "docker-compose up -d"
             }
         }
     }
